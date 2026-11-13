@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="JETON - İkinci El Pazarı">
+<title>JETON | İkinci El Alım Satım</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <nav>
+    <a href="#" class="logo-container">
+      <span class="logo-text">JETON</span>
+    </a>
+    <div class="nav-actions">
+      <div id="userContainer"></div>
+      <button class="btn-primary" id="openAddModal">+ İlan Ver</button>
+    </div>
+  </nav>
+</header>
+
+<section class="hero">
+  <h1>Al, Sat, Kazan!
+İkinci el alışverişin güvenilir adresi.																																																						</h1>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Ne arıyorsunuz?">
+    <button class="btn-primary" id="searchBtn">Ara</button>
+  </div>
+</section>
+
+<div class="history-bar">
+  <div class="history-card">
+    <div class="history-row">
+      <span class="history-title">🕒 Son Aramalar</span>
+      <div class="history-tags" id="recentTagsContainer"></div>
+      <button class="clear-history-btn" onclick="clearRecentSearches()">Temizle</button>
+    </div>
+    <div class="history-row">
+      <span class="history-title">👁️ Son Baktıkların</span>
+      <div class="history-tags" id="recentViewsContainer"></div>
+      <button class="clear-history-btn" onclick="clearRecentViews()">Temizle</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <button class="mobile-filter-toggle" id="mobileFilterToggleBtn" onclick="toggleMobileSidebar()">
+    🎛️ Kategoriler & Detaylı Filtreleme
+  </button>
+
+  <aside class="sidebar" id="sidebarElement">
+    <h3>Kategoriler</h3>
+    <ul class="categories-list" id="categoryList">
+      <li><a href="#" class="active" data-category="all" data-subcategory="all"><span>Tüm Kategoriler</span></a></li>
+      <li><a href="#" data-category="favoriler" data-subcategory="all" style="color:var(--danger)"><span>♥ Favorilerim</span> <span class="fav-count-badge" id="favCount">0</span></a></li>
+      <li>
+        <a href="#" data-category="elektronik" data-subcategory="all"><span>Elektronik</span> <span>›</span></a>
+        <ul class="sub-categories-list" id="sub-elektronik">
+          <li><a href="#" data-category="elektronik" data-subcategory="Telefon">Telefon</a></li>
+          <li><a href="#" data-category="elektronik" data-subcategory="Bilgisayar">Bilgisayar</a></li>
+          <li><a href="#" data-category="elektronik" data-subcategory="Tablet">Tablet</a></li>
+          <li><a href="#" data-category="elektronik" data-subcategory="Konsol & Oyun">Konsol & Oyun</a></li>
+          <li><a href="#" data-category="elektronik" data-subcategory="Kulaklık">Kulaklık</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#" data-category="mobilya" data-subcategory="all"><span>Ev & Mobilya</span> <span>›</span></a>
+        <ul class="sub-categories-list" id="sub-mobilya">
+          <li><a href="#" data-category="mobilya" data-subcategory="Masa & Sandalye">Masa & Sandalye</a></li>
+          <li><a href="#" data-category="mobilya" data-subcategory="Koltuk Takımı">Koltuk Takımı</a></li>
+          <li><a href="#" data-category="mobilya" data-subcategory="Kitaplık & Raf">Kitaplık & Raf</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#" data-category="giyim" data-subcategory="all"><span>Giyim & Moda</span> <span>›</span></a>
+        <ul class="sub-categories-list" id="sub-giyim">
+          <li><a href="#" data-category="giyim" data-subcategory="Ceket & Mont">Ceket & Mont</a></li>
+          <li><a href="#" data-category="giyim" data-subcategory="Ayakkabı">Ayakkabı</a></li>
+          <li><a href="#" data-category="giyim" data-subcategory="Takım Elbise">Takım Elbise</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#" data-category="spor" data-subcategory="all"><span>Spor & Hobi</span> <span>›</span></a>
+        <ul class="sub-categories-list" id="sub-spor">
+          <li><a href="#" data-category="spor" data-subcategory="Bisiklet">Bisiklet</a></li>
+          <li><a href="#" data-category="spor" data-subcategory="Fitness Aletleri">Fitness Aletleri</a></li>
+          <li><a href="#" data-category="spor" data-subcategory="Ağırlık Seti">Ağırlık Seti</a></li>
+        </ul>
+      </li>
+    </ul>
+
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--line);">
+    <h3>Detaylı Filtreleme</h3>
+
+    <div class="filter-group">
+      <label>Şehir Seç</label>
+      <input type="text" id="sidebarLocationInput" class="city-trigger-input" placeholder="📍 Tüm Şehirler (Tıkla)" readonly onclick="openCityModal()">
+    </div>
+    <div class="filter-group">
+      <label>Fiyat Aralığı (TL)</label>
+      <div class="price-inputs">
+        <input type="number" id="minPrice" placeholder="Min">
+        <span>-</span>
+        <input type="number" id="maxPrice" placeholder="Maks">
+      </div>
+    </div>
+    <div class="filter-group">
+      <label>Ürün Durumu</label>
+      <select id="statusFilter">
+        <option value="all">Hepsi</option>
+        <option value="İkinci El">İkinci El</option>
+        <option value="Sıfır">Sıfır</option>
+      </select>
+    </div>
+    <div class="filter-group" id="dynamicFilterGroup" style="display:none;">
+      <label id="dynamicFilterLabel">Kategori Kriteri</label>
+      <select id="dynamicFilterSelect">
+        <option value="all">Tümü</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Sıralama</label>
+      <select id="sortFilter">
+        <option value="newest">En Yeni</option>
+        <option value="price-asc">Fiyat: Düşükten Yükseğe</option>
+        <option value="price-desc">Fiyat: Yüksekten Düşüğe</option>
+      </select>
+    </div>
+    <button class="btn-outline" style="width: 100%; border-radius: 10px;" onclick="resetFilters()">Filtreleri Temizle</button>
+  </aside>
+
+  <main>
+    <div class="products-header">
+      <h2 id="resultCount">Tüm İlanlar</h2>
+    </div>
+    <div class="products-grid" id="productsGrid"></div>
+    <div class="load-more-wrapper" id="loadMoreWrapper" style="display:none;">
+      <button class="btn-outline" style="padding: 12px 30px; font-weight:700;" onclick="loadMoreProducts()">Daha Fazla İlan Göster (+12)</button>
+    </div>
+  </main>
+</div>
+
+<div class="modal" id="cityModal">
+  <div class="modal-content" style="max-width: 500px;">
+    <button class="modal-close" onclick="closeAllModals()">✕</button>
+    <h2 style="margin-bottom: 16px; color: #0f172a; font-size: 1.3rem;">Konum Seç</h2>
+    <div style="margin-bottom: 20px; position: relative;">
+      <input type="text" id="cityModalSearchInput" placeholder="🔍 İl, ilçe veya semt ara..." autocomplete="off" oninput="filterCityModalList(this.value)" style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--line); border-radius: 12px; outline: none; background: #f8fafc; font-size: 0.95rem;">
+    </div>
+    <div id="cityModalListContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; padding-right: 4px;"></div>
+  </div>
+</div>
+
+<div class="modal" id="authModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeAllModals()">✕</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Giriş Yap</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Kayıt Ol</button>
+    </div>
+    <form id="loginForm">
+      <div class="form-group">
+        <label>Kullanıcı Adı</label>
+        <input type="text" id="loginUser" required>
+      </div>
+      <div class="form-group">
+        <label>Şifre</label>
+        <input type="password" required>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%; padding:12px; margin-top:10px;">Giriş Yap</button>
+    </form>
+    <form id="registerForm" style="display:none;">
+      <div class="form-group">
+        <label>Ad Soyad</label>
+        <input type="text" id="regName" required>
+      </div>
+      <div class="form-group">
+        <label>E-posta</label>
+        <input type="email" required>
+      </div>
+      <div class="form-group">
+        <label>Şifre</label>
+        <input type="password" required>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%; padding:12px; margin-top:10px;">Hesap Oluştur</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="profileModal">
+  <div class="modal-content" style="max-width: 800px;">
+    <button class="modal-close" onclick="closeAllModals()">✕</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--line); padding-bottom:12px;">
+      <h2 style="color:#0f172a; font-size: 1.25rem;">Hesap Merkezi</h2>
+      <div style="background:#fff7ed; border:1px solid #fed7aa; padding:4px 12px; border-radius:20px; font-size:0.82rem; font-weight:700; color:#c2410c;">⭐ 4.9 Puan (34 Değerlendirme)</div>
+    </div>
+    <div class="profile-layout">
+      <div class="profile-menu">
+        <button class="profile-menu-btn active" id="menuBtnAds" onclick="switchProfileTab('ads')">📦 İlanlarım</button>
+        <button class="profile-menu-btn" id="menuBtnMsgs" onclick="switchProfileTab('msgs')">💬 Mesajlar <span style="background:var(--danger); color:#fff; font-size:0.65rem; padding:1px 5px; border-radius:8px; float:right;">2</span></button>
+        <button class="profile-menu-btn" id="menuBtnAuth" onclick="switchProfileTab('auth')">🔒 Giriş Bilgileri</button>
+        <button class="profile-menu-btn" id="menuBtnAbout" onclick="switchProfileTab('about')">ℹ️ Hakkımızda</button>
+        <button class="profile-menu-btn" id="menuBtnHelp" onclick="switchProfileTab('help')">❓ Yardım & Destek</button>
+        <button class="profile-menu-btn" id="menuBtnSettings" onclick="switchProfileTab('settings')">⚙️ Ayarlar & Bildirimler</button>
+        <hr style="margin: 8px 0; border:0; border-top:1px solid var(--line);">
+        <button class="profile-menu-btn" style="color:var(--danger);" onclick="logout()">🚪 Çıkış Yap</button>
+      </div>
+      <div class="profile-content-area">
+        <div id="pSecAds">
+          <div id="myAdsList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        </div>
+        <div id="pSecMsgs" style="display: none;">
+          <div class="chat-container">
+            <div class="chat-list" id="chatUserList">
+              <div class="chat-user-item active" data-user="Müşteri Ahmet" onclick="selectChat('Müşteri Ahmet')"><span>Ahmet</span> <span class="chat-badge">1</span></div>
+              <div class="chat-user-item" data-user="Müşteri Zeynep" onclick="selectChat('Müşteri Zeynep')"><span>Zeynep</span> <span class="chat-badge">1</span></div>
+            </div>
+            <div class="chat-box">
+              <div style="padding: 10px; border-bottom: 1.5px solid var(--line); font-size: 0.82rem; font-weight: bold; color:#0f172a;" id="activeChatUser">Müşteri Ahmet</div>
+              <div class="chat-messages" id="chatMessages">
+                <div class="msg incoming">Merhaba, ürün hala satılık mı?</div>
+                <div class="msg outgoing">Evet, günceldir. Pazarlık payı vardır.</div>
+              </div>
+              <div class="chat-input-area">
+                <input type="text" id="chatInputText" placeholder="Mesaj yaz...">
+                <button class="btn-primary" style="padding: 6px 12px; font-size:0.8rem;" onclick="sendChatMessage()">Gönder</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="pSecAuth" style="display: none;">
+          <h4 style="margin-bottom:12px; font-size:1rem; color:#0f172a;">Giriş ve Güvenlik Bilgileri</h4>
+          <div class="form-group">
+            <label>Kullanıcı Adı</label>
+            <input type="text" id="accountNameInput" value="Eray Yılmaz">
+          </div>
+          <div class="form-group">
+            <label>E-posta Adresi</label>
+            <input type="email" value="eray@jeton.com">
+          </div>
+          <div class="form-group">
+            <label>Yeni Şifre</label>
+            <input type="password" placeholder="••••••••">
+          </div>
+          <button class="btn-primary" onclick="alert('Giriş bilgileriniz güncellendi!')">Değişiklikleri Kaydet</button>
+        </div>
+        <div id="pSecAbout" style="display: none; font-size: 0.9rem; color: var(--muted); line-height: 1.6;">
+          <h4 style="margin-bottom:10px; font-size:1rem; color:#0f172a;">JETON Hakkında</h4>
+          <p>JETON, ikinci el eşya alım satımını en hızlı, güvenli ve kolay hale getirmek için geliştirilmiş yeni nesil bir pazar yeridir. Kullanılmayan eşyalarınızı nakit paraya dönüştürün ya da aradığınız ürüne en kısa sürede ulaşın.</p>
+          <p style="margin-top:10px;">Versiyon: 2.7.0</p>
+        </div>
+        <div id="pSecHelp" style="display: none; font-size: 0.9rem; color: var(--muted); line-height: 1.6;">
+          <h4 style="margin-bottom:10px; font-size:1rem; color:#0f172a;">Yardım Merkezi</h4>
+          <p><b>Nasıl ilan verebilirim?</b> Sağ üstteki "+ İlan Ver" butonuna tıklayarak adımları takip edebilirsiniz.</p>
+          <p style="margin-top:8px;"><b>Güvenli alışveriş nasıl yapılır?</b> Yüz yüze görüşmelerde ortak ve kalabalık noktaları tercih etmenizi öneririz.</p>
+          <p style="margin-top:12px;">Destek Hattı: <b>destek@jeton.com</b></p>
+        </div>
+        <div id="pSecSettings" style="display: none; font-size: 0.9rem;">
+          <h4 style="margin-bottom:12px; font-size:1rem; color:#0f172a;">Bildirim ve İletişim Tercihleri</h4>
+          <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:20px;">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:500;">
+              <input type="checkbox" id="notifEmailCheck" style="width:18px; height:18px; accent-color:var(--primary);">
+              📧 E-posta Bildirimleri (Yeni mesajlar ve teklifler için e-posta al)
+            </label>
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:500;">
+              <input type="checkbox" id="notifSmsCheck" style="width:18px; height:18px; accent-color:var(--primary);">
+              📱 SMS Bildirimleri (İlan durumları ve fiyat düşüşleri için SMS al)
+            </label>
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:500;">
+              <input type="checkbox" id="darkModeCheck" style="width:18px; height:18px; accent-color:var(--primary);">
+              🌙 Koyu Tema (Dark Mode Önizlemesi)
+            </label>
+          </div>
+          <button class="btn-primary" onclick="saveNotificationSettings()">Tercihleri Kaydet</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="detailModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeAllModals()">✕</button>
+    <img id="mImg" src="" alt="" style="width:100%; height:260px; object-fit:cover; border-radius:16px; margin-bottom:15px;">
+    <div style="display:flex; gap:8px; margin-bottom:10px;" id="mBadgesContainer"></div>
+    <h2 id="mTitle" style="margin-bottom:8px; color:#0f172a;"></h2>
+    <div id="mPrice" style="font-size:1.6rem; font-weight:800; color:var(--primary); margin-bottom:15px;"></div>
+    <div id="mSpecs" style="background:#f8fafc; padding:12px 16px; border-radius:12px; margin-bottom:15px; font-size:0.9rem; font-weight:600; color:#334155; display:flex; gap:20px; flex-wrap:wrap;"></div>
+    <p id="mDesc" style="color:var(--muted); margin-bottom:20px; white-space:pre-line;"></p>
+    <div style="background:#f8fafc; padding:16px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; border: 1px solid var(--line);">
+      <div>
+        <div style="font-size:0.82rem; color:var(--muted);">Satıcı Bilgisi</div>
+        <div id="mSeller" style="font-weight:700; color:#0f172a; display:flex; align-items:center; gap:6px;"></div>
+        <div id="mLoc" style="font-size:0.8rem; color:var(--muted);"></div>
+      </div>
+      <button class="btn-accent" onclick="openChatFromDetail()">Satıcıya Mesaj At</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="addModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeAllModals()">✕</button>
+    <h2 style="margin-bottom:20px; color:#0f172a;">JETON'da Yeni İlan Yayınla</h2>
+    <form id="addForm">
+      <div class="form-group">
+        <label>İlan Başlığı</label>
+        <input type="text" id="addTitle" placeholder="örn: iPhone 13 Pro Max Çiziksiz" required>
+      </div>
+      <div class="form-group">
+        <label>Ana Kategori</label>
+        <select id="addCategory" required onchange="onAddCategoryChange()">
+          <option value="elektronik">Elektronik</option>
+          <option value="mobilya">Ev & Mobilya</option>
+          <option value="giyim">Giyim & Moda</option>
+          <option value="spor">Spor & Hobi</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Alt Kategori</label>
+        <select id="addSubCategory" required></select>
+      </div>
+      <div class="form-group" id="addGroupStorage">
+        <label>Hafıza / RAM / Özellik</label>
+        <input type="text" id="addStorageSpec" placeholder="örn: 128 GB / 8 GB RAM">
+      </div>
+      <div class="form-group">
+        <label>Fiyat (TL)</label>
+        <input type="number" id="addPrice" required>
+      </div>
+      <div class="form-group">
+        <label>Durum ve Etiketler</label>
+        <select id="addStatus" required>
+          <option value="İkinci El">İkinci El</option>
+          <option value="Sıfır">Sıfır</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Özel Rozet Seçeneği</label>
+        <select id="addBadgeType">
+          <option value="normal">Normal İlan</option>
+          <option value="acil">🔥 Acil Satılık</option>
+          <option value="vitrin">⭐ Vitrin İlanı</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Şehir</label>
+        <input type="text" id="addCity" placeholder="Örn: Kayseri" required>
+      </div>
+      <div class="form-group">
+        <label>Fotoğraf Ekle</label>
+        <input type="file" id="addImageFile" accept="image/*" required style="padding: 7px; background: #fff;">
+      </div>
+      <div class="form-group">
+        <label>Açıklama</label>
+        <textarea id="addDesc" required></textarea>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%; padding:12px;">İlanı Yayınla</button>
+    </form>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
