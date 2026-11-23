@@ -1,3 +1,5 @@
+const API_BASE = 'http://localhost:3000/api';
+
 let currentUser = JSON.parse(localStorage.getItem('token_user')) || null;
 let favorites = JSON.parse(localStorage.getItem('token_favs')) || [];
 let recentSearches = JSON.parse(localStorage.getItem('token_recent_searches')) || [];
@@ -59,6 +61,60 @@ for (let i = 0; i < 100; i++) {
     spec: template.spec,
     desc: `${template.title} son derece temiz durumdadır sorunsuz çalışır,güvenle alabilirsiniz.`
   });
+}
+
+async function syncProductsFromApi() {
+  try {
+    const res = await fetch(`${API_BASE}/ilanlar`);
+    if (!res.ok) return;
+    const apiProducts = await res.json();
+    if (Array.isArray(apiProducts) && apiProducts.length > 0) {
+      const normalized = apiProducts.map(item => ({
+        id: item.id || Date.now(),
+        title: item.title || item.baslik || 'İsimsiz İlan',
+        category: item.category || item.kategori || 'elektronik',
+        subCategory: item.subCategory || 'Telefon',
+        price: Number(item.price || item.fiyat || 0),
+        status: item.status || 'İkinci El',
+        badge: item.badge || 'normal',
+        city: item.city || 'İstanbul',
+        seller: item.seller || (currentUser ? currentUser.name : 'Satıcı'),
+        verified: item.verified !== undefined ? item.verified : true,
+        rating: item.rating || '5.0',
+        image: item.image || itemTemplates[0].img,
+        spec: item.spec || '',
+        desc: item.desc || ''
+      }));
+
+      const existingIds = new Set(products.map(p => p.id));
+      const newOnes = normalized.filter(p => !existingIds.has(p.id));
+      products = [...newOnes, ...products];
+      renderProducts();
+    }
+  } catch (err) {
+    console.warn('API bağlantısı kurulamadı, yerel verilerle devam ediliyor:', err.message);
+  }
+}
+
+async function sendProductToApi(productData) {
+  try {
+    const res = await fetch(`${API_BASE}/ilanlar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...productData,
+        baslik: productData.title,
+        fiyat: productData.price,
+        kategori: productData.category
+      })
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn('API kaydı yapılamadı, yerel listede tutuldu:', err.message);
+  }
+  return null;
 }
 
 const grid = document.getElementById('productsGrid');
@@ -403,7 +459,7 @@ function populateCityList(cityArray) {
 
   cityArray.forEach(city => {
     const item = document.createElement('div');
-    item.style.cssText = 'padding: 12px 16px; border-radius: 12px; cursor: pointer; background: #fff; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 10px; transition: 0.2s; border: 1px solid var(--line);';
+    item.style.cssText = 'padding: 12px 16px; border-radius: 12px; cursor: pointer; background: #fff; font-weight: 500; color: #0f172a; display: flex; align-items: center; gap: 10px; transition: 0.2s; border: 1px solid var(--line);';
     item.innerHTML = `📍 <span>${city}</span>`;
     item.onmouseover = () => item.style.background = '#fff7ed';
     item.onmouseout = () => item.style.background = '#fff';
@@ -492,7 +548,7 @@ document.getElementById('addForm').onsubmit = (e) => {
   }
 
   const reader = new FileReader();
-  reader.onload = function(event) {
+  reader.onload = async function(event) {
     const imageDataUrl = event.target.result;
     const cat = document.getElementById('addCategory').value;
     const subCat = document.getElementById('addSubCategory').value;
@@ -515,11 +571,16 @@ document.getElementById('addForm').onsubmit = (e) => {
       desc: document.getElementById('addDesc').value
     };
 
+    const savedOnServer = await sendProductToApi(newProduct);
+    if (savedOnServer && savedOnServer.id) {
+      newProduct.id = savedOnServer.id;
+    }
+
     products.unshift(newProduct);
     renderProducts();
     closeAllModals();
     document.getElementById('addForm').reset();
-    alert('JETON\'da ilanınız başarıyla yayınlandı!');
+    alert("JETON'da ilanınız başarıyla yayınlandı!");
   };
 
   reader.readAsDataURL(file);
@@ -603,7 +664,15 @@ function renderMyAds() {
   });
 }
 
-function deleteMyAd(id) {
+async function deleteMyAd(id) {
+  try {
+    await fetch(`${API_BASE}/ilanlar/${id}`, {
+      method: 'DELETE'
+    });
+  } catch (err) {
+    console.warn('API silme isteği gönderilemedi:', err.message);
+  }
+
   products = products.filter(p => p.id !== id);
   renderMyAds();
   renderProducts();
@@ -667,3 +736,4 @@ updateAuthUI();
 renderHistoryBars();
 onAddCategoryChange();
 renderProducts();
+syncProductsFromApi();
